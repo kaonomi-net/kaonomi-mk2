@@ -1,0 +1,84 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Threading.Tasks;
+using KAONOMI.Core.Models.LLM;
+
+namespace KAONOMI.Core.Models
+{
+    /// <summary>
+    /// Persisted dialog turn: session id, request/response payloads, prompts, and prior interactions.
+    /// </summary>
+    public  class Dialog : EntityBase, ISoftDeletable, ITagged
+    {
+        /// <summary>Never erased: marked deleted instead (<see cref="ISoftDeletable"/>).</summary>
+        public bool isDeleted { get; set; } = false;
+
+
+        /// <summary>Client or server session identifier grouping related turns.</summary>
+        public string SessionId { get; set; }
+        /// <summary>Outbound chat request sent to the LLM API.</summary>
+        public DialogGenericRequest? request { get; set; }
+        /// <summary>Inbound chat completion returned by the LLM API.</summary>
+        public DialogGenericResponse? response { get; set; }
+        /// <summary>Extracted user prompt text for indexing and search.</summary>
+        public string PromptUserText { get; set; }
+        /// <summary>Extracted system prompt text for indexing and search.</summary>
+        public string PromptSystemText { get; set; }
+
+        /// <summary>
+        /// What the emotion engine adds to the system prompt of this dialog: the text given in /emotion of the chat for
+        /// the emotion that leads in the conversation (<see cref="Emotion"/>), in its version
+        /// <see cref="EmotionPromptVersion"/>. Null when no emotion was found yet, or when its text is empty.
+        /// </summary>
+        public string? EmotionSystemText { get; set; }
+
+        /// <summary>The emotion that leads in the conversation when this dialog was answered (the last one the emotion engine found), or null.</summary>
+        public string? Emotion { get; set; }
+
+        public int EmotionPromptVersion { get; set; }
+
+
+        /// <summary>How many times the processor asked the model again because its answer repeated one already given in the conversation (0: the first answer was new).</summary>
+
+        public int RepeatRetries { get; set; }
+
+
+        /// <summary>The model still repeated itself after every try: the answer is the sentence of the assistant saying it has nothing new, not the one of the model.</summary>
+
+        public bool RepeatFallback { get; set; }
+
+        /// <summary>Earlier prompts and completions in the same session.</summary>
+        public List<PreviousInteraction> PreviousInteractions { get; set; }
+
+        /// <summary>The entities of the user prompt, found by the NER of the server (the agent of the entities of the sequence).</summary>
+        public List<NerEntity> Entities { get; set; } = new List<NerEntity>();
+
+        /// <summary>
+        /// What Kaonomi knows about these entities (the agent of the entities): the entities of the ontology the prompt
+        /// names and the intels that match them. The processor writes it in the prompt of the model.
+        /// </summary>
+        public List<DialogKnowledge> Knowledge { get; set; } = new List<DialogKnowledge>();
+
+        /// <summary>The user prompt as it was sent to the model (its previous exchanges compressed); null before the processor.</summary>
+        public string? PromptSentUserText { get; set; }
+
+        /// <summary>The system prompt as it was sent to the model (with the knowledge kept); null before the processor.</summary>
+        public string? PromptSentSystemText { get; set; }
+
+        /// <summary>What the compression of the prompt did; null before the processor.</summary>
+        public PromptCompressionStats? PromptCompression { get; set; }
+
+        /// <summary>Initializes empty request, response, and interaction collections.</summary>
+        public Dialog()
+        { 
+            PreviousInteractions = new List<PreviousInteraction>();
+            request = new DialogGenericRequest();
+            response = new DialogGenericResponse();
+            
+
+        }
+    }
+}

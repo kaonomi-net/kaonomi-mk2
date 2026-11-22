@@ -1,0 +1,39 @@
+{
+  "appName": "KaonomiRestServer",
+  "projectName": "KAONOMI",
+  "language": "EN",
+  "category": "SERVER",
+  "appDescription": "Rest Server",
+  "llmmodel": "lfm3-omni-2b",
+  "AppDocumentationUrl": "https://www.kaonomi.net",
+  "consoleTheme": "matrix",
+  "httpsPort": 49165,
+
+  "dataRepository": {
+    "Url": "http://localhost:9200",
+    "Layer": "Default",
+    "Prefix": "",
+    "Password": "",
+    "User": ""
+  },
+  "dialogRepository": {
+    "Url": "http://localhost:9200",
+    "Layer": "Default",
+    "Prefix": "",
+    "Password": "",
+    "User": ""
+  },
+  "adminRepository": {
+    "Url": "http://localhost:9200",
+    "Layer": "Default",
+    "Prefix": "",
+    "Password": "",
+    "User": ""
+  },
+  "latencyMs": 1,
+  "ollamaUrl": "http://localhost:11435",
+  "llmProvider": "lmstudio",
+  "fooocusUrl": "http://127.0.0.1:8888"
+
+
+}

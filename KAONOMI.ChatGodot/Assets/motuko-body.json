@@ -1,0 +1,65 @@
+{
+  "name": "motuko",
+  "width": 523,
+  "height": 1190,
+  "face": [
+    71,
+    -10,
+    360,
+    360
+  ],
+  "joints": {
+    "hip_l": [
+      182.0,
+      826.5
+    ],
+    "knee_l": [
+      170.0,
+      1018.0
+    ],
+    "ankle_l": [
+      150.0,
+      1154.0
+    ],
+    "hip_r": [
+      396.0,
+      826.5
+    ],
+    "knee_r": [
+      375.5,
+      1018.0
+    ],
+    "ankle_r": [
+      395.5,
+      1154.0
+    ],
+    "shoulder_l": [
+      60.5,
+      701.7
+    ],
+    "elbow_l": [
+      42.5,
+      812.0
+    ],
+    "wrist_l": [
+      49.5,
+      893.0
+    ],
+    "shoulder_r": [
+      522.2,
+      360.4
+    ],
+    "elbow_r": [
+      553.0,
+      603.7
+    ],
+    "wrist_r": [
+      563.2,
+      808.1
+    ]
+  },
+  "joints_from": "silhouette",
+  "seed": 3,
+  "model": "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+  "arms": false
+}

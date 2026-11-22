@@ -1,0 +1,65 @@
+{
+  "name": "circuit",
+  "width": 699,
+  "height": 1195,
+  "face": [
+    173,
+    -5,
+    340,
+    340
+  ],
+  "joints": {
+    "hip_l": [
+      274.5,
+      849.5
+    ],
+    "knee_l": [
+      270.5,
+      1031.0
+    ],
+    "ankle_l": [
+      271.0,
+      1161.0
+    ],
+    "hip_r": [
+      440.0,
+      849.5
+    ],
+    "knee_r": [
+      443.5,
+      1031.0
+    ],
+    "ankle_r": [
+      444.0,
+      1161.0
+    ],
+    "shoulder_l": [
+      203.5,
+      399.0
+    ],
+    "elbow_l": [
+      139.0,
+      669.0
+    ],
+    "wrist_l": [
+      80.5,
+      867.0
+    ],
+    "shoulder_r": [
+      484.5,
+      396.8
+    ],
+    "elbow_r": [
+      587.5,
+      668.0
+    ],
+    "wrist_r": [
+      614.5,
+      866.0
+    ]
+  },
+  "joints_from": "silhouette",
+  "seed": 3,
+  "model": "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+  "arms": true
+}

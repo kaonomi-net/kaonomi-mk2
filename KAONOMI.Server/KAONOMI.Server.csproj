@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MARI.Framework.Builders" Version="1.0.0" />
+    <PackageReference Include="MARI.Framework.Core" Version="1.0.0" />
+    <PackageReference Include="MARI.Framework.Core.Abstractions" Version="1.0.0" />
+    <PackageReference Include="MARI.Framework.Node" Version="1.0.0" />
+    <PackageReference Include="MARI.Framework.Extensions.Mongo" Version="1.0.0" />
+    <PackageReference Include="OrleansDashboard" Version="8.2.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <!-- The NER: XLM-RoBERTa int8 in ONNX, on the CPU (Ner/XlmrNer.cs). -->
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.31.1" />
+    <!-- Who speaks (Voices/VoiceService.cs): sherpa-onnx runs the speaker model. It ships an ONNX Runtime of its own
+         (1.28) under the same file name as the one of Microsoft.ML.OnnxRuntime above: the newer one (1.31) is the
+         one copied, and sherpa-onnx runs on it. -->
+    <PackageReference Include="org.k2fsa.sherpa.onnx" Version="2.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The rules of the NER: the extractor of KAONOMI.LLMGateway, its source shared (the gateway stays on its own). -->
+    <Compile Include="..\KAONOMI.LLMGateway\Entities\Entity.cs" Link="Ner\Shared\Entity.cs" />
+    <Compile Include="..\KAONOMI.LLMGateway\Entities\EntityExtractor.cs" Link="Ner\Shared\EntityExtractor.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\KAONOMI.Core\KAONOMI.Core.csproj" />
+  </ItemGroup>
+
+</Project>

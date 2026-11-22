@@ -1,0 +1,65 @@
+{
+  "name": "kaonami",
+  "width": 612,
+  "height": 1177,
+  "face": [
+    102,
+    -3,
+    400,
+    400
+  ],
+  "joints": {
+    "hip_l": [
+      218.0,
+      749.3
+    ],
+    "knee_l": [
+      196.5,
+      970.0
+    ],
+    "ankle_l": [
+      194.0,
+      1128.0
+    ],
+    "hip_r": [
+      399.0,
+      749.3
+    ],
+    "knee_r": [
+      409.0,
+      970.0
+    ],
+    "ankle_r": [
+      428.0,
+      1128.0
+    ],
+    "shoulder_l": [
+      106.0,
+      412.8
+    ],
+    "elbow_l": [
+      63.0,
+      741.0
+    ],
+    "wrist_l": [
+      39.0,
+      981.0
+    ],
+    "shoulder_r": [
+      491.5,
+      344.2
+    ],
+    "elbow_r": [
+      529.5,
+      670.0
+    ],
+    "wrist_r": [
+      585.0,
+      909.0
+    ]
+  },
+  "joints_from": "silhouette",
+  "seed": 3,
+  "model": "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+  "arms": true
+}

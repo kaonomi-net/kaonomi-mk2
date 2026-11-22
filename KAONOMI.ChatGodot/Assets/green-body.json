@@ -1,0 +1,65 @@
+{
+  "name": "green",
+  "width": 612,
+  "height": 1206,
+  "face": [
+    127,
+    16,
+    360,
+    360
+  ],
+  "joints": {
+    "hip_l": [
+      268.5,
+      1003.0
+    ],
+    "knee_l": [
+      233.5,
+      1105.0
+    ],
+    "ankle_l": [
+      208.5,
+      1178.0
+    ],
+    "hip_r": [
+      396.5,
+      1003.0
+    ],
+    "knee_r": [
+      399.5,
+      1105.0
+    ],
+    "ankle_r": [
+      421.5,
+      1178.0
+    ],
+    "shoulder_l": [
+      102.5,
+      549.6
+    ],
+    "elbow_l": [
+      27.0,
+      759.0
+    ],
+    "wrist_l": [
+      52.0,
+      913.0
+    ],
+    "shoulder_r": [
+      487.8,
+      425.9
+    ],
+    "elbow_r": [
+      505.0,
+      719.9
+    ],
+    "wrist_r": [
+      510.8,
+      967.0
+    ]
+  },
+  "joints_from": "silhouette",
+  "seed": 11,
+  "model": "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+  "arms": false
+}

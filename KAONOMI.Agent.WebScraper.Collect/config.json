@@ -1,0 +1,32 @@
+{
+  "appName": "KaonomiWebScraperCollect",
+  "projectName": "KAONOMI",
+  "language": "FR",
+  "category": "WEBSCRAPER",
+  "appDescription": "Web scraper of the collection plans: collects the pages",
+  "llmmodel": "lfm3-omni-2b",
+  "appDocumentationUrl": "https://www.kaonomi.net",
+  "consoleTheme": "jarvis",
+  "dialogServerUrl": "http://localhost:49165",
+
+  "dataRepository": { "url": "http://localhost:9200", "layer": "Default", "prefix": "", "password": "", "user": "" },
+  "dialogRepository": { "url": "http://localhost:9200", "layer": "Default", "prefix": "", "password": "", "user": "" },
+  "adminRepository": { "url": "http://localhost:9200", "layer": "Default", "prefix": "", "password": "", "user": "" },
+  "ollamaUrl": "http://localhost:11435",
+  "llmProvider": "lmstudio",
+
+  "runBudgetMinutes": 8,
+  "revisitHours": 24,
+  "maxPagesPerUrl": 20,
+  "maxDepth": 2,
+  "randomPages": 5,
+  "maxImagesPerPage": 300,
+  "minImageBytes": 1024,
+  "minParagraphLength": 40,
+  "pageTimeoutSeconds": 45,
+  "delayBetweenPagesMs": 1500,
+  "respectRobotsTxt": true,
+  "browserChannel": "",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36 KaonomiWebScraper/1.0",
+  "outputFolder": ""
+}

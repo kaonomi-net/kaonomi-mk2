@@ -1,0 +1,195 @@
+namespace KAONOMI.Server
+{
+    using MARI.Framework.Builders;
+    using MARI.Framework.Configurations;
+    using MARI.Framework.Core.Abstractions;
+
+    using MARI.Framework.Node.Abstractions.Models;
+
+    using KAONOMI.Core;
+    using KAONOMI.Core.Helpers;
+    using KAONOMI.Core.Hosting;
+    using KAONOMI.Core.Models;
+    using KAONOMI.Core.Models.LLM;
+
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Mvc;
+
+    /// <summary>
+    /// ASP.NET Core host for the Kaonomi dialog pipeline, Swagger UI, and REST endpoints.
+    /// </summary>
+    internal class Program
+    {
+        static private SessionManager _session;
+        static private Config _config;
+        static private string _defaultModel;
+
+        /// <summary>Port of the Orleans dashboard (self-hosted by the silo, separate from the Swagger/REST ports).</summary>
+        private const int DashboardPort = 8090;
+
+        /// <summary>Entry point: minimal ASP.NET Core pipeline with OpenAPI.</summary>
+        static void Main(string[] args)
+        {
+            _defaultModel = "gpt-oss:20b";
+
+            // Load configuration
+            Config config = HelperConfigManager.GetFromFile<Config>("config.json");
+            _config = config;
+            string AppName = config.appName;
+
+            HelperConsoleTheme.Start(config.appName, config.appDescription, config.appDocumentationUrl, config.consoleTheme);
+
+            _session = new SessionManager(_config);
+            _session.LogSave("Application started", AppName, "Info");
+
+            var builder = WebApplication.CreateBuilder(args);
+            // Plain HTTP, on localhost only (127.0.0.1 and ::1): no certificate. This replaces the addresses of
+            // ASPNETCORE_URLS / applicationUrl.
+            builder.WebHost.ConfigureKestrel(kestrel => kestrel.ListenLocalhost(_config.httpsPort));
+            builder.Services.AddSwaggerGen(s =>
+            {
+                s.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo() { Title = "Kaonomi MKI prototype Bubulle", Version = "v1" });
+                // One Swagger section per resource (first path segment: cache, messageflow, ontology...), in alphabetical
+                // order, and inside a section the routes in alphabetical order, then GET, POST, PUT, DELETE.
+                s.TagActionsBy(api => [SwaggerSection(api.RelativePath)]);
+                s.OrderActionsBy(api => $"{SwaggerSection(api.RelativePath)}|{api.RelativePath}|{SwaggerMethodRank(api.HttpMethod)}");
+            }).AddEndpointsApiExplorer();
+
+            var jsonProcessSeq = Sequence.Build("jfo", fixUid: new Guid("D1F7C7EB-77F7-488A-91D7-77E4D5D16448"), metadataBuilder: m =>
+            {
+                m.Description("Dialog Sequence")
+                 .AddTags("chatbot", "nexai");
+            })
+                             .RequiredInput<string>()
+                             .Use<IDialogInboundGuardRailVAgent>().Configure("JFO-TABLE").Call((g, i, ctx) => g.DoProcess(i, ctx)).Return
+                             .Use<IDialogPreProcessingVAgent>().Configure("JFO-TABLE").Call((g, i, ctx) => g.DoProcess(i, ctx)).Return
+                             .Use<IDialogCacheVAgent>().Configure("JFO-TABLE").Call((g, i, ctx) => g.DoProcess(i, ctx)).Return
+                             .Use<IDialogEntityVAgent>().Configure("JFO-TABLE").Call((g, i, ctx) => g.DoProcess(i, ctx)).Return
+                             .Use<IDialogSymbolicAnalysisVAgent>().Configure("JFO-TABLE").Call((g, i, ctx) => g.DoProcess(i, ctx)).Return
+                             .Use<IDialogForecastingValidatorVAgent>().Configure("JFO-TABLE").Call((g, i, ctx) => g.DoProcess(i, ctx)).Return
+                             .Use<IDialogModelSelectionVAgent>().Configure("JFO-TABLE").Call((g, i, ctx) => g.DoProcess(i, ctx)).Return
+                             // Before the processor: the emotion it finds adds its text to the system prompt of the answer.
+                             .Use<IDialogEmotionEngineVAgent>().Configure("JFO-TABLE").Call((g, i, ctx) => g.DoProcess(i, ctx)).Return
+                             .Use<IDialogProcessorVAgent>().Configure("JFO-TABLE").Call((g, i, ctx) => g.DoProcess(i, ctx)).Return
+                             .Use<IDialogPostProcessingVAgent>().Configure("JFO-TABLE").Call((g, i, ctx) => g.DoProcess(i, ctx)).Return
+                             .Use<IDialogForecastingVAgent>().Configure("JFO-TABLE").Call((g, i, ctx) => g.DoProcess(i, ctx)).Return
+                             .Use<IDialogContextUpdateVAgent>().Configure("JFO-TABLE").Call((g, i, ctx) => g.DoProcess(i, ctx)).Return
+                             .Use<IDialogOutboundGuardrailVAgent>().Configure("JFO-TABLE").Call((g, i, ctx) => g.DoProcess(i, ctx)).Return
+                             .Build();
+
+            builder.Host.UseMARINode(b =>
+            {
+                b.WizardConfig()
+                .UseMongoCluster(mongo => mongo
+                    .ConnectionString("mongodb://localhost:27017")
+                    .ManualConfig((options, _) => options.DatabaseName = "kaonomi"),
+                    serviceId: KaonomiSiloBuilderExtensions.ServiceId,
+                    clusterId: KaonomiSiloBuilderExtensions.ClusterId)
+                .AddEndpointOptions(new ClusterNodeEndPointOptions(loopback: true, siloPort: 11111, gatewayPort: 30000))
+                .ConfigureLogging(c => c.AddConsole())
+                .AddInMemoryDefinitionProvider(d => d.SetupSequences(jsonProcessSeq));
+                b.ManualyAdvancedConfig().UseKaonomiNode("Kaonomi.Server", dashboardPort: DashboardPort);
+            });
+
+            /*  Without MongoDB, in-memory only
+             *  
+                         using var host = Host.CreateDefaultBuilder(args)
+                .UseMARINode(b =>
+                {
+                    b.WizardConfig()
+                     .NoCluster()
+                     .ConfigureLogging(c => c.AddConsole())
+                     .AddInMemoryDefinitionProvider(d => d.SetupSequences(jsonProcessSeq));
+                })
+                .Build();
+             
+             */
+
+            var app = builder.Build();
+            app.UseSwagger();
+
+
+
+            
+
+            app.MapPost("/aiassistant", async (DialogGenericRequest d, [FromServices] IMARIExecutionHandler handler) =>
+            {
+                string newid = null;
+                try
+                {
+                    Dialog dialog = new Dialog();
+                    dialog.userName = Environment.UserName;
+                    dialog.machineName = Environment.MachineName;
+                    dialog.date = DateTime.Now;
+                    dialog.request = d;
+                    // The conversation of the request: the detections are linked to it, and its context is kept.
+                    dialog.SessionId = string.IsNullOrWhiteSpace(d.sessionId) ? dialog.SessionId : d.sessionId.Trim();
+                    newid = _session.DialogSave(dialog);
+
+                    // The id goes straight to the sequence (not through a field shared by every request).
+                    var result = await handler.Sequence<string>(jsonProcessSeq.Uid)
+                                           .SetInput(newid)
+                                           .RunAsync<string>();
+
+                    var content = result.SafeGetResult();
+                    _session.LogSave("Sequence executed", AppName, "INFO");
+                    dialog = _session.DialogGet(newid);
+                    // The sequence ended without an answer (an agent failed before the processor): said as an error,
+                    // not as an empty answer.
+                    if (dialog?.response?.choices is not { Count: > 0 })
+                    {
+                        _session.LogSave($"Sequence executed without an answer (dialog {newid})", AppName, "ERROR");
+                        return Results.Problem(detail: $"The dialog sequence gave no answer (dialog {newid}): see the logs of the server.",
+                            statusCode: StatusCodes.Status500InternalServerError, title: "No answer");
+                    }
+                    return Results.Ok(dialog.response);
+                }
+                catch (Exception ex)
+                {
+                    // The cause is logged (the log itself never throws) and given to the client: an empty answer with
+                    // 200 told nothing, neither to the user nor in the logs.
+                    Console.WriteLine(ex.ToString());
+                    _session.LogSave($"Sequence executed with Error (dialog {newid ?? "not saved"}): {ex}", AppName, "ERROR");
+                    return Results.Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError,
+                        title: "The dialog sequence failed");
+                }
+            });
+
+            app.MapApiEndpoints(_session);
+            // The NER (POST /ner) loaded in the background at the start: its model (about a second) and the ontology read,
+            // so that the first request does not wait for them.
+            _ = Task.Run(() =>
+            {
+                var ner = Ner.NerService.Get(_config);
+                ner.Types();
+                _session.LogSave($"NER ready: {ner.ModelName}", AppName, "Info");
+            });
+
+
+            app.UseSwaggerUI();
+
+            // Nothing is opened in the browser at the start: Swagger (http://localhost:<httpsPort>/swagger, /rest in the
+            // chat), the Kibana dashboard and the Orleans dashboard (/orleans in the chat) are opened when asked.
+
+            app.Run();
+        }
+
+        /// <summary>Swagger section of a route: its first path segment (<c>ontology/{id}</c> → <c>ontology</c>), "general" for the root.</summary>
+        private static string SwaggerSection(string? relativePath)
+        {
+            var segment = (relativePath ?? string.Empty).Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+            return string.IsNullOrEmpty(segment) || segment.StartsWith('{') ? "general" : segment.ToLowerInvariant();
+        }
+
+        /// <summary>Sort rank of an HTTP method in Swagger: GET, POST, PUT, PATCH, DELETE, then the others.</summary>
+        private static int SwaggerMethodRank(string? method) => method?.ToUpperInvariant() switch
+        {
+            "GET" => 0,
+            "POST" => 1,
+            "PUT" => 2,
+            "PATCH" => 3,
+            "DELETE" => 4,
+            _ => 5
+        };
+    }
+}

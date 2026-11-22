@@ -1,0 +1,33 @@
+{
+  "appName": "KaonomiWebScraperAnalyze",
+  "projectName": "KAONOMI",
+  "language": "FR",
+  "category": "WEBSCRAPER",
+  "appDescription": "Web scraper of the collection plans: analyses the pages collected",
+  "llmmodel": "lfm3-omni-2b",
+  "appDocumentationUrl": "https://www.kaonomi.net",
+  "consoleTheme": "jarvis",
+  "dialogServerUrl": "http://localhost:49165",
+
+  "dataRepository": { "url": "http://localhost:9200", "layer": "Default", "prefix": "", "password": "", "user": "" },
+  "dialogRepository": { "url": "http://localhost:9200", "layer": "Default", "prefix": "", "password": "", "user": "" },
+  "adminRepository": { "url": "http://localhost:9200", "layer": "Default", "prefix": "", "password": "", "user": "" },
+  "ollamaUrl": "http://localhost:11435",
+  "llmProvider": "lmstudio",
+
+  "advancedModel": "",
+  "imageModel": "",
+  "chatConfigFile": "",
+  "updateOntology": true,
+  "maxPagesPerRun": 3,
+  "stageBudgetMinutes": 8,
+  "llmTimeoutSeconds": 240,
+  "llmChunkChars": 6000,
+  "maxTextChars": 36000,
+  "maxEntitiesPerPage": 40,
+  "emotionBatchSize": 6,
+  "passageChars": 1500,
+  "maxImagesPerPage": 12,
+  "minImageBytes": 15000,
+  "maxImageBytes": 6000000
+}

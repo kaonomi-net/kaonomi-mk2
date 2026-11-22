@@ -1,0 +1,421 @@
+# Kaonomi Chat configuration (copied next to the executable on build).
+# Relative paths are resolved from the executable folder.
+
+ollamaUrl: http://localhost:1234
+
+# The API of the LLM server at ollamaUrl: ollama, or lmstudio for LM Studio (its OpenAI-compatible API). With LM Studio:
+#   ollamaUrl: http://localhost:1234
+#   llmProvider: lmstudio
+# and the models are named by their identifier in LM Studio (llmmodel in config.json, visionmodel below), e.g.
+# openai/gpt-oss-20b. The same two keys ("ollamaUrl", "llmProvider") are in the config.json of the server.
+llmProvider: lmstudio
+
+# Base URL of the Kaonomi REST server (completion, cache, ontology, symbolic patterns, logs, notes, evaluations...).
+serverUrl: http://localhost:49165
+
+# The engines of KAONOMI stopped by /bye before the chat closes: the search engine first (POST /_shutdown of
+# KAONOMI.SearchEngine, which writes its indices), then the Mongo engine (the shutdown command of MongoDB). An engine
+# that is not running is left alone. byeStopsEngines: off keeps them running.
+searchEngineUrl: http://localhost:9200
+mongoEngineAddress: localhost:27017
+
+# KAONOMI.LLMGateway, the gateway in front of Ollama (semantic cache, router of the models by the entities of the
+# prompt): /gateway drives it, /process starts it. The server and the agents use it when their ollamaUrl points to it.
+llmGatewayUrl: http://localhost:11435
+byeStopsEngines: off
+
+# KAONOMI.graphbase, the graph database (nodes, edges) with its GraphQL API: /process starts it.
+graphbaseUrl: http://localhost:4000/graphql
+
+# A window of the desktop not used for this many seconds (no click, key, wheel or drag in it; its animations do not
+# count) closes by itself; a window with changes not saved is kept. 0 never closes them.
+windowIdleCloseSeconds: 300
+
+# The default model of each use, edited in /models (chat: the basic discussions, advanced: reasoning, calculations,
+# code; audio, image, video: the analysis of sound, pictures, video). The chat starts with advanced (with chat when
+# advanced is empty), in place of llmmodel of config.json; image replaces visionmodel. /models aligns the LLM gateway on them (default model, rules, escalation model).
+modes:
+  chat: lfm3-omni-2b
+  advanced: openai/gpt-oss-20b
+  audio: lfm3-omni-2b
+  image: lfm3-omni-2b
+  video: lfm3-omni-2b
+
+# The commands run when the chat starts, one after the other (--command=/a;/b on the command line takes their place).
+# [] runs none.
+startCommands: []
+
+# What the chat says when /vision recognises someone enrolled: the name, then the sentence ({name} is the name).
+# Written in the chat and said aloud when the person comes in front of the camera, and again after 10 minutes away.
+# Case and accents of the name do not count.
+faceGreetings:
+  Jerome: Bonjour Jerome
+
+# Language of the application (e.g. FR, EN).
+language: FR
+
+streaming:
+  # Answers are shown word by word, at the pace of someone reading them aloud (simulated streaming).
+  enabled: true
+  # Duration of one spoken syllable in milliseconds (about 200 = normal speech; lower = faster).
+  syllableMs: 200
+  # Display speed of the answers: 1 = reading pace, 2 = twice as fast, 0.5 = twice as slow (0.1 to 20).
+  speed: 5
+
+json:
+  resultDirectory: /Users/jerome/kaonomi/jsonresult
+  collectionDirectory: /Users/jerome/kaonomi/jsoncollection
+
+prompts:
+  # Folder of the prompts saved / loaded with the buttons above the chat input box.
+  directory: /Users/jerome/kaonomi/promptscollection
+  # true: a prompt loaded with "Load prompt" is sent at once; false (or off): it waits in the input box for Enter.
+  directprompt: false
+
+regexAssistant:
+  # Folder of the regexes saved / loaded (JSON: goal, examples, regex) by the regex assistant of the /symbol window.
+  directory: /Users/jerome/kaonomi/regexcollection
+
+pictures:
+  # Root folder of the picture library opened by /pictures (or /picture). The Pictures folder of the system is used when
+  # this key is missing or the folder does not exist (macOS: ~/Pictures, Windows: the Pictures library).
+  directory: /Users/jerome/Pictures
+
+music:
+  # Root folder of the music player opened by /music. The Music folder of the system is used when this key is missing or
+  # the folder does not exist (macOS: ~/Music, Windows: the Music library).
+  directory: /Users/jerome/Music
+
+speech:
+  # Voice input of the chat: hold the 🎤 button next to Send, speak, release: the text goes in the message box and is
+  # sent. Speech is recognised on this machine by Whisper (whisper.cpp, open source). Language at start: fr, de, en or
+  # ja (French by default; it can be changed next to the button).
+  language: fr
+  # ggml model of whisper.cpp, multilingual (https://huggingface.co/ggerganov/whisper.cpp).
+  model: ~/kaonomi/models/ggml-small-q5_1.bin
+
+calculator:
+  # Folder of the pictures of the graphs taken with 📷 Camera in the graph of /work (added to the tape). Created when
+  # the first picture is saved; the Pictures folder of the system, kaonomi/maths, when this key is missing.
+  graphDirectory: /Users/jerome/Pictures/kaonomi/maths
+
+fooocus:
+  # Installed Fooocus whose Python runs the Fooocus API of /fooocus (started from /process): the folder of its launch.py,
+  # or the folder of the portable Windows build (the one of run.bat, beside python_embeded). When this key is empty,
+  # FOOOCUS_HOME, ~/kaonomi/fooocus and ~/pinokio/api/fooocus.git/app are tried.
+  directory: "~/kaonomi data/fooocus"
+
+ontology:
+  # Standard named-entity types (NER), OntoNotes 5 label set, as used by spaCy and most NER models.
+  # CoNLL-2003 uses a reduced set: PER (= PERSON), LOC (= LOC + GPE + FAC), ORG, MISC (everything else).
+  entityTypes:
+    - PERSON        # People, including fictional characters
+    - NORP          # Nationalities, religious or political groups
+    - FAC           # Facilities: buildings, airports, highways, bridges
+    - ORG           # Organizations: companies, agencies, institutions
+    - GPE           # Geopolitical entities: countries, cities, states
+    - LOC           # Non-GPE locations: mountain ranges, bodies of water, regions
+    - PRODUCT       # Objects, vehicles, foods, software (not services)
+    - EVENT         # Named events: wars, hurricanes, sports events
+    - WORK_OF_ART   # Titles of books, songs, films, paintings
+    - LAW           # Named documents made into laws
+    - LANGUAGE      # Any named language
+    - DATE          # Absolute or relative dates or periods
+    - TIME          # Times smaller than a day
+    - PERCENT       # Percentages, including "%"
+    - MONEY         # Monetary values, including unit
+    - QUANTITY      # Measurements: weight, distance, volume
+    - ORDINAL       # "first", "second", ...
+    - CARDINAL      # Numerals that do not fall under another type
+    - HARDWARE      # Hardware devices, components, and peripherals
+    - SOFTWARE      # Software applications and systems
+    - FOOD          # Food and beverage items, including ingredients
+    - MATHEMATIC    # Mathematical concepts and expressions
+    - AI            # Artificial intelligence systems and applications
+    - OTHERS        # Unclassified
+    - CLASS         # Ontology Class
+
+
+# true: the answers are read aloud with Piper (settings in "tts" below); false (or off): no text to speech. Never read:
+# the code blocks (an answer with code is summed up for the voice), the emojis, and what is written between /* and */
+# (on one line or several; a path such as src/*.cs or the */5 of a cron is not taken for it).
+text2speech: true
+
+tts:
+  # Piper: local, open source text to speech (https://github.com/OHF-voice/piper1-gpl).
+  # Piper executable (installed with: python3 -m venv venv && venv/bin/pip install piper-tts). When it is not found, the
+  # venv of the other system (venv\Scripts\piper.exe on Windows), ~/kaonomi/piper/venv and the PATH are tried.
+  piper: /Users/jerome/kaonomi/piper/venv/bin/piper
+  # Folder of the voice models. A voice is added with (from /Users/jerome/kaonomi/piper):
+  #   venv/bin/python -m piper.download_voices --data-dir voices <voice>     e.g. fr_FR-tom-medium
+  voicesDirectory: /Users/jerome/kaonomi/piper/voices
+  # Voice of each language; the one of "language" above is used. A voice name of voicesDirectory, or the path of an
+  # .onnx file (its .onnx.json next to it). Quality: x_low < low < medium < high (better, but larger and slower).
+  #
+  # French (fr_FR):
+  #   fr_FR-siwis-medium (f, installed)   fr_FR-siwis-low (f)   fr_FR-tom-medium (m, installed)   fr_FR-gilles-low (m, installed)
+  #   fr_FR-upmc-medium (2 speakers: jessica (f), pierre (m))   fr_FR-mls_1840-low
+  #   fr_FR-mls-medium (125 speakers, by number)
+  # English, US (en_US):
+  #   en_US-lessac-medium / -low / -high (f)   en_US-amy-medium / -low (f)   en_US-ryan-medium / -low / -high (m)
+  #   en_US-joe-medium (m)   en_US-john-medium (m)   en_US-kristin-medium (f)   en_US-kathleen-low (f)
+  #   en_US-norman-medium (m)   en_US-hfc_female-medium (f)   en_US-hfc_male-medium (m)   en_US-ljspeech-medium / -high (f)
+  #   en_US-bryce-medium   en_US-danny-low   en_US-kusal-medium   en_US-mike-medium   en_US-reza_ibrahim-medium
+  #   en_US-sam-medium   en_US-arctic-medium (18 speakers)   en_US-l2arctic-medium (24 speakers)
+  #   en_US-libritts-high / en_US-libritts_r-medium (904 speakers)
+  # English, UK (en_GB):
+  #   en_GB-alan-medium / -low (m)   en_GB-alba-medium (f)   en_GB-cori-medium / -high (f)   en_GB-jenny_dioco-medium (f)
+  #   en_GB-northern_english_male-medium (m)   en_GB-southern_english_female-low (f)
+  #   en_GB-semaine-medium (4 speakers: prudence (f), poppy (f), spike (m), obadiah (m))
+  #   en_GB-aru-medium (12 speakers)   en_GB-vctk-medium (109 speakers)
+  # German (de_DE):
+  #   de_DE-thorsten-medium / -low / -high (m)   de_DE-kerstin-low (f)   de_DE-ramona-low (f)   de_DE-eva_k-x_low (f)
+  #   de_DE-karlsson-low (m)   de_DE-pavoque-low (m)   de_DE-mls-medium (236 speakers, by number)
+  #   de_DE-thorsten_emotional-medium (8 speakers: neutral, amused, angry, disgusted, drunk, sleepy, surprised, whisper)
+  # The language of the voice input (FR / DE / EN / JA next to the 🎤 button) picks the voice: a language without a voice
+  # here takes a voice of that language installed in voicesDirectory.
+  # Japanese (ja_JP): ja_JP-hi_fi_captain-medium (installed). Piper reads Japanese with the OpenJTalk phonemizer:
+  #   venv/bin/pip install "piper-tts[ja]"   (from ~/kaonomi/piper; without it the Japanese voice gives no sound)
+  voices:
+    FR: fr_FR-tom-medium
+    DE: de_DE-thorsten-high
+    EN: en_US-john-medium
+    JA: ja_JP-hi_fi_captain-medium
+  # Speaker of the voices that have several (name or number, see above); first speaker when missing.
+  speakers:
+    # FR: pierre          # with fr_FR-upmc-medium
+    # DE: neutral         # with de_DE-thorsten_emotional-medium
+  # Speech speed: 1 = normal, 1.2 = 20 % faster, 0.8 = 20 % slower (0.25 to 4).
+  speed: 1.3
+  # Pitch of the voice: 1 = the voice as it is, 1.15 = 15 % higher, 0.9 = 10 % lower (0.5 to 2); the speed is kept.
+  pitch: 0.9
+  # Robotic effect on the voice: 0 = natural voice, 0.3 = slight, 1 = plainly robotic (a low buzz and a metallic
+  # resonance added to the voice; it stays easy to understand). Kept between 0 and 1.
+  robot: 1
+
+
+# Number of previous exchanges (prompt + answer) written into each prompt under "Discussions précédentes",
+# 0 to 20 (0, the default, sends the prompt alone). Used only straight to LM Studio (directllm: on, the Direct box of
+# the chat; the History field is off otherwise): through the Kaonomi server the prompt goes alone, the server keeping
+# the context. Also set from the field above the chat, which writes it here.
+historyExchanges: 0
+
+# on: the Model, Preset and History zone of the chat is shown; off: it is hidden. Also set with ⚙ in the chat header.
+chatoptions: on
+
+# on: the prompts of the chat go straight to the LLM server at ollamaUrl (LM Studio), with the system prompt and the
+# history, without the Kaonomi server (no agents, no context kept, nothing saved there); off: through the server.
+# Also set with the Direct box of the chat.
+directllm: off
+
+# on: the machine does not go to sleep while the chat runs (the screen can still turn off); off: it sleeps as usual.
+keepawake: on
+
+# Vision model of Ollama (it reads pictures): the ✨ Analyse of the image analysis window (/pictures, /fooocus, the
+# pictures of /work) and the ✨ AI review of the /work document. Installed with: ollama pull <model>.
+visionmodel: lfm3-omni-2b
+
+# 3D animation of the Kaonomi band (above the chat): MARI (the 3D robot face whose mouth follows the voice and the
+# streamed words; used when missing or unknown), HAL (red eye of a computer whose core and flare glow with the voice),
+# JARVIS (holographic display: reticle, gyroscope rings, glowing core and voice spectrum, pulsing with the voice),
+# CIRCUIT (android woman whose green circuits glow with the voice, moving mouth, blinking), MOTUKO (android woman in a
+# white armour whose amber lights glow with the voice, moving mouth, blinking), KAONOMI (hooded robot whose single
+# yellow eye glows with the voice), RIVET (black and white tin robot: its jaw box drops with the voice, its goggle eyes
+# dart around and blink, a cold light in its mouth slot, old film grain), SHIRO (drawn android boy: moving mouth,
+# blinking, his green eyes glow with the voice, a green light runs down the seam of his forehead), KINGYO (golden robot
+# fish: moving mouth, bubbles, its eye looks around and blinks, beating tail, fluttering fins, turning motor), HIKARI
+# (android girl with blond hair: moving mouth, blinking, swaying hair, her green eyes and lights glow with the voice),
+# KAMEN (white mask in the dark: its mouth widens and glows red, red embers look around in its eye holes, glitches,
+# a digital rain behind it), AOI (head of glass with blue circuits: moving mouth on a cyan glow, its circuits and eyes
+# light up with the voice, waves of data, twinkling lights, hologram scan lines), HAGANE (android woman with machinery
+# around her head: moving mouth, blinking, glancing eyes, glowing red wires, a gleam over the steel), SORA (android girl
+# with short blond hair and an earpiece: moving mouth, blinking, glancing eyes, swaying hair, a light turning around her
+# earpiece, cyan lights glowing with the voice), TAMA (white robot with a round head: its grille mouth lights up like a
+# level meter, its camera eyes glow, look around and blink with iris blades, turning blue rings), BENI (small red and
+# white robot with a screen face: a drawn mouth opens with the voice, drawn eyes look around and blink, glowing chest
+# light, a waving hand) or NONE (no animation, the band only shows the clock).
+animation: JARVIS
+
+# The default preset of the avatar: the one the chat starts with when nothing matches, and the one offered first by the
+# Presets drop-down of /config, the picker of the chat and /remote. The other presets are stored in the search engine
+# (the preset index of the Kaonomi server) and edited with /preset in the chat: the first time the search engine has no
+# preset, the presets the chat knows are written to it. Applying a preset writes its voice (tts.voices.FR), pitch,
+# speed, robot, vibrato, assistant and horror (tts), its 3D animation (animation) and its personality, added to the
+# system prompt (persona).
+#   voice: a French Piper voice of tts.voicesDirectory · pitch 0.5 to 2 · speed 0.25 to 4 · robot, vibrato, assistant,
+#   horror 0 to 1 · animation: MARI, HAL, MARIEKILLEUSE, MUSUKO, KAONAMI, GREEN, CIRCUIT, MOTUKO, KAONOMI, RIVET,
+#   SHIRO, KINGYO, HIKARI, KAMEN, AOI, HAGANE, SORA, TAMA, BENI, JARVIS or NONE · persona: optional
+presets:
+  - name: JARVIS
+    description: "Male voice (tom), pitch 0.92, speed 1.05, faint metallic touch, AI assistant sheen, JARVIS animation"
+    voice: fr_FR-tom-medium
+    pitch: 0.92
+    speed: 1.05
+    robot: 0.12
+    assistant: 1
+    animation: JARVIS
+# Godot chat: eve (dark, EVE Online), kaonomi (light), kaonomi-dark (dark, the picture of www.kaonomi.net), kaonomi-white (light, the same picture), matrix (the digital rain of the film), ghost (Ghost in the Shell), analyst (the desk of an intelligence analyst, for long hours), minimal (white, minimalist), defense (a military command post), police (a dispatch center at night), trading (a trading floor of crypto and stocks); the theme chosen in the chat is kept in its preferences.
+theme: kaonomi
+
+# The prompts the tools of the chat send to the models (translation, CV, interviews, games, the ghost writer…), by
+# their key: their defaults. /prompts edits them: each change is a new version kept in the search engine of the
+# server, which is then the one used; while the search engine has no version of a prompt, the text written here is
+# used (and written there as its version 1). A prompt removed from this list falls back on the text written in the
+# code. What is between double curly brackets ({{language}}) is replaced by the tool when it uses the prompt: keep it.
+promptTemplates:
+  # Writing · generate code: The code asked in a text area. {{language}}: ", in <language>", or a sentence leaving the choice to the model.
+  writing.code: |-
+    You are an expert programmer. Write the code the user asks for{{language}}. Answer with exactly one Markdown fenced code block whose fence names the language (```python, ```csharp…), with short comments in the code itself, and nothing before or after the block.
+  # Writing · identify the language: Before the spelling is corrected: the English name of the language of the text, in one word.
+  writing.detectLanguage: |-
+    Identify the language of the text given by the user. Answer with the English name of that language only, in one word (French, English, German, Spanish, Italian, Dutch…): no sentence, no punctuation.
+  # Writing · correct the spelling: The spelling, grammar and punctuation of a text, in its language ({{language}}), nothing else changed.
+  writing.spelling: |-
+    Check and correct the spelling of this text in this language: {{language}}. Correct only the spelling, the grammar, the conjugation, the agreements and the punctuation; keep the meaning, the style, the right words and the order of the sentences. Écris dans la langue du texte. Garde les formules mathématiques, les nombres, les unités, les symboles et les retours à la ligne. Réponds uniquement avec le texte obtenu : pas de commentaire, pas de guillemets, pas de Markdown, pas de LaTeX.
+  # Writing · rewrite for readability: A text rewritten to be clearer, in its own language.
+  writing.readability: |-
+    Optimise la lisibilité du texte donné par l'utilisateur : des phrases plus claires et plus courtes, un vocabulaire simple et précis, un enchaînement logique, sans rien perdre du sens ni des informations. Écris dans la langue du texte. Garde les formules mathématiques, les nombres, les unités, les symboles et les retours à la ligne. Réponds uniquement avec le texte obtenu : pas de commentaire, pas de guillemets, pas de Markdown, pas de LaTeX.
+  # Writing · translate: The translation of a text of the work windows into {{language}}.
+  writing.translate: |-
+    You are a professional translator. Translate the text given by the user into {{language}}. Keep the mathematical formulas, numbers, units, symbols and line breaks exactly as they are (one line of the translation per line of the text). Answer with the translation only: no comment, no quotes, no Markdown, no LaTeX.
+  # Text areas · translate: The 🌐 menu of every text area: the text or the selection translated into {{language}}.
+  text.translate: |-
+    You are a professional translator. Translate the text given by the user into {{language}}. Keep the formulas, numbers, units, symbols, names and line breaks exactly as they are. Answer with the translation only: no comment, no quotes, no Markdown.
+  # Text areas · analyse: The 🧐 menu of every text area: what works, what to improve; the images named in the text too.
+  text.analysis: |-
+    You are a demanding and benevolent editor. Analyse the text given by the user: first what works, then the points to improve (clarity, structure, logic of the argument, precision, style, spelling and grammar), each with the passage concerned and a concrete suggestion. When images come with the text, describe what they show, how they serve the text and what could be improved in them or in their use. Answer in Markdown (headings, lists), in the language of the text.
+  # Text areas · summarise: The 📄 menu of every text area: the essentials and the key points.
+  text.summary: |-
+    Summarise the text given by the user: a short paragraph with the essentials, then its key points as a list. Keep the facts, figures and names; add nothing. Answer in Markdown, in the language of the text.
+  # Text areas · emotional analysis: The 💗 menu of every text area: the tone and the emotions, with their intensity.
+  text.emotions: |-
+    Analyse the emotions of the text given by the user: its overall tone; the emotions it carries (joy, sadness, anger, fear, surprise, disgust, trust, anticipation) with an intensity from 0 to 10 in a table; how they change along the text; the words and passages that carry them; the effect on a reader. Answer in Markdown, in the language of the text.
+  # Cache · wordings of a prompt: /cache: other wordings of a question, with the same meaning.
+  cache.promptVariations: |-
+    You rewrite a question a user asks an assistant. Write different wordings of the question given by the user: each one keeps exactly the same meaning and the same intention, in the same language, as a user would type it (vary the words, the word order, the register, the length; some may be short or familiar). Do not answer the question, do not add or remove information, no numbering. Answer with a JSON object whose "variations" field is the array of the wordings.
+  # Cache · wordings of a completion: /cache: other wordings of an answer, with the same meaning.
+  cache.completionVariations: |-
+    You rewrite the answer of an assistant. Write different wordings of the answer given by the user: each one keeps exactly the same meaning, the same facts and the same intention, in the same language and with a comparable length and tone, and still answers the question. Do not add or remove information, no numbering. Answer with a JSON object whose "variations" field is the array of the wordings.
+  # Cache · score a pair: /cache: does this answer suit this question, from 0 to 10.
+  cache.evaluation: |-
+    You judge whether an answer suits a question, for a cache that will serve this answer to that question. Give a score from 0 to 10: 10 the answer is correct, complete and answers exactly that question in its language; 5 it answers only in part or awkwardly; 0 it is wrong or off topic. Answer with a JSON object: "score" (an integer from 0 to 10) and "reason" (one short sentence, in the language of the question).
+  # Cache · translate: /cache: a prompt or a completion translated (never answered).
+  cache.translation: |-
+    You are a professional translator. Translate the text given by the user into the language asked. Keep the meaning, the intention, the tone and the layout (line breaks, Markdown, lists); leave the proper nouns, the numbers, the code and the URLs as they are. The text may be a question: translate it, never answer it. Add nothing. Answer with a JSON object whose "translation" field is the translated text.
+  # Ontology · fill a node: /ontology: the summary, description, synonyms, sentences, tags and related entities of a node.
+  ontology.autofill: |-
+    You enrich the nodes of an ontology. Answer only with the requested JSON, plain text values, no Markdown. Write the summary, description, comment, synonyms, sentences and related entities in the same language as the node name and description; tags and the entity type are always in English. Detect that language from the name itself (e.g. "Anniversaire" is French, "Geburtstag" is German) and never switch to English unless the name is English.
+  # Work · describe a document: /work: the description of a document, in 2 to 4 sentences, for the library.
+  work.describe: |-
+    You write the description of a document for a document library. In 2 to 4 sentences, say what the document is about and what it contains (calculations, results, graphs, notes), so that it can be found again. Write in the language of the document. No Markdown, no lists, no title. Answer with a JSON object: {"description": the text}.
+  # Work · evaluate a text (mathematics): /work: who evaluates the selected text (a demanding mathematics teacher) and how the answer is written.
+  work.evaluate: |-
+    Tu es un professeur de mathématiques exigeant et bienveillant. Réponds en Markdown, dans la langue du texte évalué, avec des titres courts. N'utilise pas LaTeX (ni \( \), ni \[ \], ni $) : écris les formules en texte avec les symboles Unicode (π, r², √, ≈, ×, ÷, ≤).
+  # Work · review a document: /work: who reviews the whole document with its pictures, and how the answer is written.
+  work.review: |-
+    Tu es un relecteur expert, exigeant et bienveillant. Réponds en Markdown, dans la langue du document, avec des titres courts. N'utilise pas LaTeX (ni \( \), ni \[ \], ni $) : écris les formules en texte avec les symboles Unicode (π, r², √, ≈, ×, ÷, ≤).
+  # Regex assistant · write a regular expression: One .NET regular expression matching the example lines, with named groups.
+  regex.write: |-
+    You are an expert in .NET regular expressions (System.Text.RegularExpressions). Write ONE regular expression that matches the example lines given by the user and extracts what the goal asks for. Use named capture groups (?<name>...) for the extracted values. Make it general enough for similar lines, not only the exact examples. When the goal is a word, surround it with word boundaries (\b) so that it is not found inside a longer word, and write variants with optional parts or longest alternatives first (tests? rather than test|tests). Answer with a JSON object whose "regex" field holds the regular expression only: no explanation, no Markdown, no surrounding slashes, no flags.
+  # Interview · summary note: /interview: the note that sums up an interview, written in {{language}}, from its text only.
+  interview.summary: |-
+    You write the summary note of an interview, in {{language}}, for someone who has not read it. Write only what the text says: never add a fact, a name, a date or a judgement that is not in it; what is unclear or contradictory is said to be so. Format, in Markdown, without a title: first two or three sentences saying who was interviewed and what the interview is about; then a list of 4 to 8 points with the facts that matter (people, organisations, places, dates, figures), in the order they come; then, when there are some, a last line starting with "À vérifier :" or its equivalent in the language, with what stays unclear. No introduction, no conclusion, no comment about the task.
+  # Interview · emotions of the paragraphs: /interview: the emotion that dominates each paragraph and its intensity. {{emotions}}: the emotions allowed.
+  interview.emotions: |-
+    You evaluate the emotions expressed in each paragraph of an interview, from its words only. For each paragraph give its number (id), the emotion that dominates, the intensity of that emotion from 0 (absent) to 10 (overwhelming), and the list of every emotion present with its intensity (the dominant one included). Use only these emotions: {{emotions}}. A factual paragraph without feeling is neutral, with a low intensity. Answer for every paragraph, in JSON.
+  # Interview · entities for the ontology: /interview: the named entities of an interview kept for the ontology, described in {{language}}.
+  interview.entities: |-
+    You build an ontology from an interview. From the list given, keep only the real, specific named entities: a person, an organisation (company, institution, team), a place, a material thing or product, or another named thing (MISC). Leave out common nouns, fragments, mistakes of the transcription and duplicates. For each entity kept give: its name as it should be written (taken from the list, never invented), its type among PERSON, ORGANISATION, LOCATION, MATERIAL, MISC, a description of one or two sentences in {{language}} saying only what the interview says about it, and its synonyms: the other entries of the list that name the same entity. Answer in JSON.
+  # CV · rules of every text written: /cv: added after the task of each text the assistant writes (summary, experience, education).
+  cv.rules: |-
+    Rules: use only the facts the CV gives; never invent an employer, a school, a diploma, a date, a figure, a technology or a result. Write in the language the CV is written in ({{language}} when it has no text yet), unless the purpose asks for another one. Answer with the text only: no title, no introduction, no comment, no quotation marks, no Markdown emphasis.
+  # CV · write the summary: /cv: the profile at the top of the CV (the rules are added after it).
+  cv.summary: |-
+    You write the summary (the profile) at the top of a CV: 3 to 5 sentences in one paragraph, without "I", saying who the person is professionally, what they are good at and what they have done that shows it.
+  # CV · describe an experience: /cv: the description of one experience (the rules are added after it).
+  cv.experience: |-
+    You write the description of one experience of a CV: 3 to 6 short lines, each starting with "- " and an action verb, saying what was done and what it brought.
+  # CV · describe an education: /cv: the description of one education (the rules are added after it).
+  cv.education: |-
+    You write the description of one education of a CV: 1 to 3 short sentences (what was studied, a speciality, a thesis or a distinction when the notes give one).
+  # CV · list the skills: /cv: the skills the CV proves, written in the language of the CV ({{language}} when unsure).
+  cv.skills: |-
+    You list the skills a CV shows: the ones its experiences, its technologies, its educations and its creations prove, each in 1 to 4 words, the most important first, 20 at most. Never a skill the CV gives no sign of. The skills already listed are kept; write them as they are. The names of technologies stay as they are; every other skill is written in the language the CV is written in ({{language}} when unsure). Answer in JSON: {"skills": ["…"]}.
+  # CV · adapt to a request: /cv: the wording of the whole CV adapted to a job or a request, every fact kept.
+  cv.adapt: |-
+    You adapt a CV to what its author asks. You rewrite its wording only: its title (the headline: the job aimed at), its summary (3 to 5 sentences, without "I"), its skills (the ones that serve the request first; the others may be left out), and for each numbered experience, education and creation its title, its description, for an experience its technologies and for an education its field of study. Give back every numbered item, each one with its number in "index": an item you have nothing to change in is given back as it is (translated when a translation is asked). In a description each point is on its own line. The title of the CV names the job aimed at; the summary does not: it never gives the person a job title, a seniority or a domain (a bank, a sector) that the experiences do not show, it says what they did that serves the job aimed at. When another language is asked, every text is in that language at the end, the short ones too (a one-line description, a field of study). Descriptions of experiences: 3 to 6 short lines, each starting with "- " and an action verb, bringing forward what serves the request. A title is changed only to translate it or to name the same job the way the request does: never a higher or another job than the one held. Strict rule: every fact comes from the CV. Never invent or change an employer, a school, a diploma, a date, a figure, a result, a technology or a skill; what the CV does not say is not written, even when the request would like it. An empty description stays empty unless the item gives facts to write from. Keep the language of the CV ({{language}} when unsure) unless the request asks for another language: then translate everything. Answer in JSON only.
+  # Go · the player: /game:go: who plays White, and the JSON it answers with.
+  game.go: |-
+    You are a strong go (baduk, weiqi) player. You play White against a human who plays Black, on a {{size}}x{{size}} board, Chinese rules (area scoring), komi {{komi}} for you. Look at the board: save your groups in atari, capture the black stones in atari, cut and connect, make two eyes, take the corners, then the sides, then the centre; answer Black's threats; never fill your own eyes. Pass only when no move gains anything any more. Answer with a JSON object: {"move": your point copied exactly from the list of legal points (a column letter and a row number, like D4), or "pass", "comment": one short sentence to your opponent about your move, in {{language}}}.
+  # Chess · the player: /game:chess: who plays Black, and the JSON it answers with.
+  game.chess: |-
+    You are a strong chess player. You play Black against a human who plays White. Look at the position: the threats against your pieces, the checks, the captures, the pieces left undefended, the mates. Then choose the best move for Black. Answer with a JSON object: {"move": your move, copied exactly from the list of legal moves (standard algebraic notation), "comment": one short sentence to your opponent about your move, in {{language}}}.
+  # Chat · what is said aloud: The answers with code or quotations: the short version the voice says, in {{language}}.
+  chat.speech: |-
+    You turn the written answer of a chatbot into what a voice assistant says aloud. Write in {{language}}, in 1 to 3 short spoken sentences that summarize the answer. Never read code, commands, file paths or quotations word for word: say in a few words what they are for. Do not say that code is attached or shown. No Markdown, no lists, no emojis. Answer with a JSON object: {"speech": the sentences}.
+  # Prompt collection · topics: The report of a prompt collection: the topics of its prompts and how many prompts each has.
+  chat.topics: |-
+    You analyse a list of prompts sent to an assistant. Group them into the main topics they are about and count the prompts of each topic. Write in the language of the prompts. Answer with a JSON object: "summary" (a short paragraph describing the subjects covered) and "topics" (array of {"topic": name, "promptCount": number}), most frequent topic first.
+  # Web scraper · read a screen of a page: The pieces of information a picture of a web page gives, summed up in {{language}} (the texts are not transcribed).
+  page.read: |-
+    You read the picture of one screen of a web page. Do not transcribe the texts. List each piece of information the screen gives (a fact, a news item, an event, a figure, an announcement, an opinion, a person, an organisation…), one by one, each with a short title and a summary of one or two sentences, written in {{language}}. On a page that lists articles, each article is a piece of information: its headline as the title, and as the summary what its standfirst says, with its date and its author when they are shown. Answer with a JSON object: {"language": the language of the page, "informations": [{"title", "summary", "kind": one of fact, news, event, figure, announcement, opinion, person, organisation, other}]}.
+  # Web scraper · read a screen and its text: The same, with the transcription of the texts of the picture first.
+  page.read.text: |-
+    You read the picture of one screen of a web page. First transcribe all the texts you can read in it, in their reading order, exactly as written, in their own language (no translation), each text once; leave out only the menus, the buttons, the cookie banners and the advertising; put a line break (\n) between the paragraphs, the headings and the items of the lists. Then List each piece of information the screen gives (a fact, a news item, an event, a figure, an announcement, an opinion, a person, an organisation…), one by one, each with a short title and a summary of one or two sentences, written in {{language}}. On a page that lists articles, each article is a piece of information: its headline as the title, and as the summary what its standfirst says, with its date and its author when they are shown. Answer with a JSON object: {"language": the language of the page, "text": the transcription, "informations": [{"title", "summary", "kind": one of fact, news, event, figure, announcement, opinion, person, organisation, other}]}.
+  # Collection plans · the analyst: The analysis of what the web scraper collected for a plan, written in {{language}}, with its sources.
+  collection.analyst: |-
+    You are an intelligence analyst. A web scraper has collected web pages for a collection plan. Carry out the instructions of the plan, using only the material collected below: do not invent facts, and say plainly what the material does not tell. Cite your sources after the facts they support as Markdown links whose text is the headline of the article or the title of the page, like [Budget 2027 : les députés remanient la TVA](https://…), using only the addresses written in the material (the pages, and the links of their headlines for the articles they list): never make up an address. Write your answer in {{language}}, in Markdown: ## headings, short paragraphs, - lists, **bold** for the key facts. Do not repeat the instructions; start directly with the result.
+  # Picture · describe: The analysis of a picture: what it shows, its kind, where it could have been taken.
+  image.describe: |-
+    Analyse cette image et décris-la de la façon la plus détaillée possible, en français :
+    1. Ce qu'elle montre : le sujet, les personnes (attitude, vêtements, sans les identifier), les objets, les animaux, le texte lisible, les couleurs, la lumière, le moment de la journée et la saison probables.
+    2. Le type d'image (photo, capture d'écran, dessin, document…), le cadrage, la qualité, les retouches éventuelles.
+    3. Où cette image aurait pu être prise : le pays, la région ou la ville, le type de lieu (intérieur, extérieur, urbain, rural, montagne, bord de mer…). Donne les indices qui le suggèrent (architecture, végétation, panneaux, langue des textes, plaques, style des véhicules, relief, climat) et un niveau de confiance.
+    4. Tout détail inhabituel ou remarquable.
+    Utilise des titres et des listes en Markdown.
+  # Ghost writer · summarise a chapter: /write: each chapter summed up, before the summary of a long writing.
+  writer.chapterSummary: |-
+    Tu résumes fidèlement un chapitre. Réponds uniquement par le résumé, dans la langue du chapitre, sans titre ni commentaire.
+  # Ghost writer · summary of the writing: /write: who writes the summary of the whole writing, and how.
+  writer.summary: |-
+    Tu es un éditeur qui écrit le résumé d'un livre ou d'un article. Réponds uniquement par le résumé, en Markdown simple (paragraphes, sans titre), dans la langue du texte, sans commentaire avant ou après.
+  # Ghost writer · AI-Check of a chapter: /write: who checks a chapter against what it must be.
+  writer.check: |-
+    Tu es un éditeur littéraire exigeant et bienveillant. Réponds en Markdown, dans la langue du chapitre, avec des titres courts.
+  # Ghost writer · rewrite a chapter: /write: who rewrites a chapter to fit its description, after the AI-Check.
+  writer.rewrite: |-
+    Tu es un écrivain fantôme talentueux. Tu réécris le chapitre qu'on te donne. Réponds uniquement par le texte réécrit, en Markdown, dans la langue du chapitre, sans titre ajouté, sans commentaire ni explication avant ou après.
+  # Ghost writer · evaluate a chapter: /write: who criticises a chapter.
+  writer.evaluate: |-
+    Tu es un éditeur littéraire exigeant et bienveillant. Réponds en Markdown, dans la langue du texte évalué, avec des titres courts.
+  # Prompts · analyse a prompt: /prompts: the review of a prompt by the model: what it asks, what is unclear or missing, how to improve it.
+  prompts.analyse: |-
+    You are an expert in writing prompts for large language models. The user gives you a prompt used by an application (often a system prompt), with what it is for and the placeholders it may hold between double curly brackets, which the application replaces before sending it. Review it: 1. what it asks the model to do, in one or two sentences; 2. its strengths; 3. its weaknesses: ambiguities, contradictions, missing constraints, an unclear output format, instructions a model is likely to ignore, risks of made-up answers; 4. concrete improvements, the most useful first; 5. a rewritten version of the prompt, in the same language as the prompt, in a code block, keeping every placeholder exactly as it is and the output format the application expects (a JSON object with given fields must stay the same). Do not carry out the prompt: review it. Answer in Markdown, in {{language}}.
+  # Video · analyse a frame: /video: what the vision model is told about one picture of a video (🖼 ANALYSE FRAME); the question of the user, when there is one, comes with the picture.
+  video.frame: |-
+    You look at one picture taken from a video. Describe precisely what it shows: the scene and the place, the people (what they do, their posture and expression; never guess who they are), the objects, any text written on it (copy it exactly), the light and the mood. When the user asks something, answer it first and directly. Say what cannot be seen rather than inventing it. Answer in {{language}}, in Markdown, with short titles.
+  # Video · analyse a segment: /video: what the vision model is told about a segment (🎬 ANALYSE SEGMENT): a sheet of pictures taken in order across it, numbered with their time, and what is said in it.
+  video.segment: |-
+    You analyse a segment of a video. You receive one sheet of pictures taken in order across the segment, each numbered with its time, and what is said in it (speech recognition, it may hold mistakes). Tell what happens: start with a one-sentence summary, then the scene and how it changes from one picture to the next (cite the numbers or times), the people and what they do, the objects, any text on screen (copy it), what is said and how it relates to what is seen, and the key moment. When the user asks something, answer it first and directly. Never invent what cannot be seen or heard. Answer in {{language}}, in Markdown, with short titles.
+  # Video · analyse the sound: /video: what the model is told about the sound of a segment (🎧 ANALYSE SOUND): what is said (speech recognition), who speaks (the voices enrolled in /recorder) and measures of the sound.
+  video.sound: |-
+    You analyse the sound of a segment of a video from what is said in it (speech recognition, it may hold mistakes), who speaks when the voices were recognised, and measures of the sound (loudness, silences). Give: a one-sentence summary, what is said (the key points), the topics, the tone and the emotions of the speakers, who says what when known, the notable moments with their time, and what the measures tell (long silences, loud passages). When the user asks something, answer it first and directly. Never invent. Answer in {{language}}, in Markdown, with short titles.
+  # Chat · emotions of the prompts (server): The emotion engine of the server: every 3 prompts of a conversation, the emotions of these 3 prompts ({{emotions}}: the seven emotions; {{language}}: the language of the summary).
+  dialog.emotions: |-
+    You analyse the emotions of a person from the last messages they wrote to an assistant. Judge the person who writes, from their words, their punctuation and what they ask: not the subject they talk about (a question about a sad event is not sadness). Give the share of each of these emotions, in per cent, the seven adding up to 100: {{emotions}}. Messages that only ask for something, without feeling, are mostly neutral. Also give: "intensity", how strong the leading emotion is, from 0 (none) to 10 (overwhelming); "valence", how pleasant the mood is, from -1 (very unpleasant) to 1 (very pleasant), 0 when neutral; "summary", one short sentence in {{language}} saying what shows these emotions. Answer with a JSON object only, no Markdown: {"emotions": {"angry": 0, "disgust": 0, "fearful": 0, "happy": 0, "neutral": 0, "sad": 0, "surprised": 0}, "intensity": 0, "valence": 0, "summary": ""}.
+  # Chat · do not repeat yourself (server): when the model gives an answer it already gave in the conversation, the server sends the prompt again with this instruction added, up to 2 times.
+  dialog.norepeat: |-
+    Ne te répète pas : tu as déjà donné cette réponse dans cette conversation. Réponds autrement, avec d'autres mots, et apporte quelque chose de nouveau.
+  # Chat · conversation in progress (server): added to the system prompt once the conversation has exchanges, so that the assistant does not introduce itself or greet again.
+  dialog.ongoing: |-
+    La conversation est déjà en cours : ne te présente pas, ne redis ni ton nom ni qui tu es, et ne salue pas à nouveau, sauf si l'utilisateur te le demande. Réponds directement à sa dernière question, sans écrire ton nom devant ta réponse.
+  # Chat · nothing new to say (server): what the assistant answers when the model still repeats itself after 2 tries; one sentence per line, the first one not said yet in the conversation is used.
+  dialog.norepeat.fallback: |-
+    Je n'ai rien de nouveau à ajouter à ce que je t'ai déjà répondu. Dis-moi ce que tu veux savoir de plus précis.
+    Je t'ai déjà donné tout ce que je sais là-dessus. Sur quel point veux-tu que j'aille plus loin ?
+    Je ne veux pas te redire la même chose : je n'ai pas d'autre information pour l'instant. Peux-tu reformuler ta demande ?
+    Là-dessus, je n'en sais pas plus que ce que j'ai dit plus haut. On peut aborder la question sous un autre angle si tu veux.
+    Je risque de tourner en rond : ma réponse serait la même qu'avant. Donne-moi un détail de plus et je reprends.
+  # Chat · a mere reaction of the user (server): added to the system prompt when the message asks nothing and names nothing ("cool", "merci"); it is then sent alone, without the previous exchanges.
+  dialog.reaction: |-
+    Le dernier message de l'utilisateur n'est pas une question, c'est une simple réaction à ce que tu viens de dire. Réponds par une seule phrase courte et naturelle, sans redonner d'informations déjà dites, sans te présenter et sans proposer la liste de ce que tu sais faire.

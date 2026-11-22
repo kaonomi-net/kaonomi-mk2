@@ -1,0 +1,65 @@
+{
+  "name": "kaonomi",
+  "width": 396,
+  "height": 1164,
+  "face": [
+    4,
+    -8,
+    400,
+    400
+  ],
+  "joints": {
+    "hip_l": [
+      156.0,
+      684.4
+    ],
+    "knee_l": [
+      126.5,
+      933.0
+    ],
+    "ankle_l": [
+      109.5,
+      1110.0
+    ],
+    "hip_r": [
+      256.0,
+      684.4
+    ],
+    "knee_r": [
+      281.5,
+      933.0
+    ],
+    "ankle_r": [
+      288.5,
+      1110.0
+    ],
+    "shoulder_l": [
+      87.0,
+      303.3
+    ],
+    "elbow_l": [
+      73.2,
+      507.1
+    ],
+    "wrist_l": [
+      68.6,
+      678.4
+    ],
+    "shoulder_r": [
+      317.0,
+      303.3
+    ],
+    "elbow_r": [
+      330.8,
+      507.1
+    ],
+    "wrist_r": [
+      335.4,
+      678.4
+    ]
+  },
+  "joints_from": "silhouette",
+  "seed": 3,
+  "model": "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+  "arms": false
+}

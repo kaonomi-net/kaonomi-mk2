@@ -1,0 +1,48 @@
+# ======================== KAONOMI.graphbase configuration ========================
+#
+# The settings of the graph database: the keys can be written dotted (http.port: 4000) or nested
+# (http: { port: 4000 }). Every key can be overridden on the command line: --set http.port=4001.
+# The relative paths are relative to the folder of this file.
+#
+# ----------------------------------- Paths ------------------------------------
+#
+# Where the graph is stored (graph.db, a SQLite database), created on the first start.
+# ~ is the home folder of the user: /Users/<user>/kaonomi/graphbase on macOS.
+path.data: ~/kaonomi/graphbase
+#
+# Where the log file is written (comment it out: console only).
+#path.logs: ../logs
+#
+# ---------------------------------- Network -----------------------------------
+#
+# localhost: this machine only (127.0.0.1 and ::1); 0.0.0.0: every network interface.
+network.host: localhost
+# The port of the GraphQL API.
+http.port: 4000
+# Plain HTTP (no HTTPS, no certificate).
+#
+# ---------------------------------- GraphQL -----------------------------------
+#
+# The path of the API (POST for the queries, GET for the IDE, WebSocket for the subscriptions).
+graphql.path: /graphql
+# The IDE in the browser (Nitro) at GET /graphql.
+graphql.ide: true
+# Deepest selection accepted (a node, its neighbours, theirs… each level counts).
+graphql.max_depth: 20
+# Most results of a list (nodes, edges, neighbours…): a larger "first" is cut to it.
+graphql.max_results: 10000
+# Deepest search of shortestPath and subgraph.
+graphql.max_hops: 10
+#
+# ---------------------------------- Security ----------------------------------
+#
+# Basic authentication of every request (the clients give one of these users).
+security.enabled: false
+security.users:
+  - username: kaonomi
+    password: changeme
+#
+# ----------------------------------- Logs -------------------------------------
+#
+# Logs every request (method, path, status, time).
+log.requests: false
